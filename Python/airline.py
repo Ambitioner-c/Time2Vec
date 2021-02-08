@@ -9,6 +9,8 @@ from keras.models import Sequential, load_model
 from sklearn.preprocessing import MinMaxScaler
 
 from keras import backend as K
+import csv
+from pandas.core.frame import DataFrame
 
 
 __scaler = MinMaxScaler(feature_range=(0, 1))
@@ -24,9 +26,22 @@ def create_dataset(dataset, look_back):
     return numpy.array(data_x), numpy.array(data_y)
 
 
-def get_dataset(pathname='../Data/2602.csv'):
-    dataframe = pd.read_csv(pathname, usecols=[1], engine='python', skipfooter=3)
-    dataset = dataframe.values
+def get_data_list(pathname='../Data/all.csv'):
+    id_list = []
+    data_list = []
+    with open(pathname, 'r') as f:
+        for j in csv.reader(f):
+            id_list.append(j[0])
+            data_list.append(j[1:])
+
+    return id_list, data_list
+
+
+def get_dataset(data):
+
+    dataset = DataFrame(data)
+    # dataframe = pd.read_csv(pathname, usecols=[1], engine='python', skipfooter=3)
+    # dataset = dataframe.values
     # 将int变为float
     dataset = dataset.astype('float32')
 
@@ -60,7 +75,7 @@ def lstm():
     return model
 
 
-def prediction(model, train_x, train_y, test_x, test_y):
+def prediction(_id, model, train_x, train_y, test_x, test_y):
     # make predictions
     train_predict = model.predict(train_x)
     test_predict = model.predict(test_x)
@@ -73,13 +88,15 @@ def prediction(model, train_x, train_y, test_x, test_y):
 
     plt.plot(train_y)
     plt.plot(train_predict[1:])
-    plt.show()
+    plt.savefig('../Image/train_' + _id + '.jpg')
+    # plt.show()
     plt.plot(test_y)
     plt.plot(test_predict[1:])
-    plt.show()
+    plt.savefig('../Image/test_' + _id + '.jpg')
+    # plt.show()
 
 
-def get_output(model, dataset):
+def get_output(_id, model, dataset):
     # Dense
     model.summary()
     # dense_output = model(input=model.input, output=model.get_layer('dense').output).predict(train_x)
@@ -89,10 +106,14 @@ def get_output(model, dataset):
     output = []
     for j in permute_dense_output:
         output.append(j[0])
-    print(output)
+    with open('../Data/result.csv', 'w') as f:
+        writer = csv.writer(f)
+        out_list = [_id]
+        out_list.extend(output)
+        writer.writerow(out_list)
 
 
-def main(path_list):
+def main(pathname):
     _dataset = None
     _train_x = None
     _train_y = None
@@ -101,16 +122,17 @@ def main(path_list):
 
     # _model = load_model('../Data/Test.h5')
     _model = lstm()
-    for j in path_list:
-        _dataset, _train_x, _train_y, _test_x, _test_y = get_dataset(j)
+    _id_list, _data_list = get_data_list(pathname)
+    for j in range(len(_data_list)):
+        _dataset, _train_x, _train_y, _test_x, _test_y = get_dataset(_data_list[j])
         _model.fit(_train_x, _train_y, epochs=100, batch_size=1, verbose=2)
 
-    prediction(_model, _train_x, _train_y, _test_x, _test_y)
-    get_output(_model, _dataset)
+        prediction(_id_list[j], _model, _train_x, _train_y, _test_x, _test_y)
+        get_output(_id_list[j], _model, _dataset)
 
     _model.save('../Data/Test.h5')
 
 
 if __name__ == '__main__':
-    _path_list = ['../Data/2602.csv', '../Data/3375.csv', '../Data/3551.csv']
-    main(_path_list)
+    _pathname = '../Data/all.csv'
+    main(_pathname)
