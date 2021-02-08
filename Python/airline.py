@@ -62,7 +62,6 @@ def lstm():
 
 def prediction(model, train_x, train_y, test_x, test_y):
     # make predictions
-    # model = load_model('../Data/Test.h5')
     train_predict = model.predict(train_x)
     test_predict = model.predict(test_x)
 
@@ -94,17 +93,24 @@ def get_output(model, dataset):
 
 
 def main(path_list):
+    _dataset = None
+    _train_x = None
+    _train_y = None
+    _test_x = None
+    _test_y = None
+
+    # _model = load_model('../Data/Test.h5')
     _model = lstm()
     for j in path_list:
         _dataset, _train_x, _train_y, _test_x, _test_y = get_dataset(j)
         _model.fit(_train_x, _train_y, epochs=100, batch_size=1, verbose=2)
 
-        prediction(_model, _train_x, _train_y, _test_x, _test_y)
-        get_output(_model, _dataset)
+    prediction(_model, _train_x, _train_y, _test_x, _test_y)
+    get_output(_model, _dataset)
 
     _model.save('../Data/Test.h5')
 
 
 if __name__ == '__main__':
-    _path_list = ['../Data/2602.csv', '../Data/3375.csv', '../Data/3351.csv']
+    _path_list = ['../Data/2602.csv', '../Data/3375.csv', '../Data/3551.csv']
     main(_path_list)
