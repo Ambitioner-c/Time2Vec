@@ -106,7 +106,7 @@ def get_output(_id, model, dataset):
     output = []
     for j in permute_dense_output:
         output.append(j[0])
-    with open('../Data/result.csv', 'w') as f:
+    with open('../Data/result.csv', 'a') as f:
         writer = csv.writer(f)
         out_list = [_id]
         out_list.extend(output)
@@ -114,20 +114,19 @@ def get_output(_id, model, dataset):
 
 
 def main(pathname):
-    _dataset = None
-    _train_x = None
-    _train_y = None
-    _test_x = None
-    _test_y = None
-
-    # _model = load_model('../Data/Test.h5')
-    _model = lstm()
+    _model = load_model('../Model/Test.h5')
+    # _model = lstm()
     _id_list, _data_list = get_data_list(pathname)
     for j in range(len(_data_list)):
+        _dataset = None
+        _train_x = None
+        _train_y = None
+        _test_x = None
+        _test_y = None
         _dataset, _train_x, _train_y, _test_x, _test_y = get_dataset(_data_list[j])
-        _model.fit(_train_x, _train_y, epochs=100, batch_size=1, verbose=2)
+        # _model.fit(_train_x, _train_y, epochs=100, batch_size=1, verbose=2)
 
-        prediction(_id_list[j], _model, _train_x, _train_y, _test_x, _test_y)
+        # prediction(_id_list[j], _model, _train_x, _train_y, _test_x, _test_y)
         get_output(_id_list[j], _model, _dataset)
 
     _model.save('../Data/Test.h5')
